@@ -9,5 +9,6 @@ namespace Benchmarks.ServerJob
         public string Repository { get; set; }
         public string Project { get; set; }
         public string DockerFile { get; set; }
+        public bool WithSubmodules { get; set; }
     }
 }

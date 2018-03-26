@@ -756,7 +756,10 @@ namespace BenchmarkServer
                     Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
                 }
 
-                Git.InitSubModules(Path.Combine(path, dir));
+                if (source.WithSubmodules)
+                {
+                    Git.InitSubModules(Path.Combine(path, dir));
+                }
 
                 dirs.Add(dir);
             }
@@ -1323,7 +1326,7 @@ namespace BenchmarkServer
         {
             job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
 
-            var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
+            var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://*:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
             var benchmarksBin = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0" : $"published";

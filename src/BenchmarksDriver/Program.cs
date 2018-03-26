@@ -99,6 +99,8 @@ namespace BenchmarksDriver
                 "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
             var repositoryOption = app.Option("-r|--repository",
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
+            var submodulesOption = app.Option("-sm|--sub-modules",
+                "Update sub-modules in the git repository.", CommandOptionType.NoValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             var useRuntimeStoreOption = app.Option("--useRuntimeStore",
@@ -383,6 +385,10 @@ namespace BenchmarksDriver
                     }
 
                     serverJob.Source.Repository = repository;
+                }
+                if (submodulesOption.HasValue())
+                {
+                    serverJob.Source.WithSubmodules = true;
                 }
                 if (projectOption.HasValue())
                 {

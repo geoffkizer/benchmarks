@@ -44,12 +44,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{EF444B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{01457A29-0D92-45A3-A37A-A6381E766D67}"
 	ProjectSection(SolutionItems) = preProject
+		docker\benchmarks\build.ps1 = docker\benchmarks\build.ps1
 		docker\benchmarks\build.sh = docker\benchmarks\build.sh
 		docker\benchmarks\Dockerfile = docker\benchmarks\Dockerfile
 		docker\benchmarks\run-client.sh = docker\benchmarks\run-client.sh
+		docker\benchmarks\run-server.ps1 = docker\benchmarks\run-server.ps1
 		docker\benchmarks\run-server.sh = docker\benchmarks\run-server.sh
 		docker\benchmarks\start-driver.sh = docker\benchmarks\start-driver.sh
 		docker\benchmarks\stop-client.sh = docker\benchmarks\stop-client.sh
+		docker\benchmarks\stop-server.ps1 = docker\benchmarks\stop-server.ps1
 		docker\benchmarks\stop-server.sh = docker\benchmarks\stop-server.sh
 	EndProjectSection
 EndProject
@@ -103,9 +106,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mongodb-techempower", "mong
 		docker\mongodb-techempower\stop.sh = docker\mongodb-techempower\stop.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarksWorkers", "src\BenchmarksWorkers\BenchmarksWorkers.csproj", "{44D137AF-404D-4963-A096-C803F4774FCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarksWorkers", "src\BenchmarksWorkers\BenchmarksWorkers.csproj", "{44D137AF-404D-4963-A096-C803F4774FCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformBenchmarks", "src\PlatformBenchmarks\PlatformBenchmarks.csproj", "{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "src\PlatformBenchmarks\PlatformBenchmarks.csproj", "{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
