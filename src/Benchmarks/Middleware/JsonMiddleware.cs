@@ -19,6 +19,8 @@ namespace Benchmarks.Middleware
         private static readonly UTF8Encoding _encoding = new UTF8Encoding(false);
         private const int _bufferSize = 27;
 
+        private static readonly ReadOnlyMemory<byte> s_buffer = Encoding.UTF8.GetBytes("{\"message\":\"Hello, World!\"}");
+
         private readonly RequestDelegate _next;
 
         public JsonMiddleware(RequestDelegate next)
@@ -34,10 +36,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.ContentLength = _bufferSize;
 
-                using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
-                {
-                    _json.Serialize(sw, new { message = "Hello, World!" });
-                }
+                httpContext.Response.Body.Write(s_buffer.Span);
 
                 return Task.CompletedTask;
             }
