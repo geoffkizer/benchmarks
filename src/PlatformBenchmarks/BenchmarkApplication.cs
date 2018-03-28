@@ -30,44 +30,9 @@ namespace PlatformBenchmarks
             public static AsciiString Json = "/json";
         }
 
-        private bool _isPlainText;
-        private bool _isJson;
-
-        public override void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-        {
-            if (path.StartsWith(Paths.Plaintext) && method == HttpMethod.Get)
-            {
-                _isPlainText = true;
-            }
-            else if (path.StartsWith(Paths.Json) && method == HttpMethod.Get)
-            {
-                _isJson = true;
-            }
-            else
-            {
-                _isPlainText = false;
-                _isJson = false;
-            }
-        }
-
-        public override void OnHeader(Span<byte> name, Span<byte> value)
-        {
-        }
-
         public override ValueTask ProcessRequestAsync()
         {
-            if (_isPlainText)
-            {
-                PlainText(Writer);
-            }
-            else if (_isJson)
-            {
-                Json(Writer);
-            }
-            else
-            {
-                Default(Writer);
-            }
+            Json(Writer);
 
             return default;
         }

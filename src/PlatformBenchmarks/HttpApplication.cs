@@ -22,11 +22,8 @@ namespace PlatformBenchmarks
     {
         public Task ExecuteAsync(ConnectionContext connection)
         {
-            var parser = new HttpParser<HttpConnection>();
-
             var httpConnection = new TConnection
             {
-                Parser = parser,
                 Reader = connection.Transport.Input,
                 Writer = connection.Transport.Output
             };
@@ -34,24 +31,12 @@ namespace PlatformBenchmarks
         }
     }
 
-    public class HttpConnection : IHttpHeadersHandler, IHttpRequestLineHandler
+    public class HttpConnection 
     {
         private State _state;
 
         public PipeReader Reader { get; set; }
         public PipeWriter Writer { get; set; }
-
-        internal HttpParser<HttpConnection> Parser { get; set; }
-
-        public virtual void OnHeader(Span<byte> name, Span<byte> value)
-        {
-
-        }
-
-        public virtual void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-        {
-
-        }
 
         public virtual ValueTask ProcessRequestAsync()
         {
@@ -123,27 +108,22 @@ namespace PlatformBenchmarks
             }
         }
 
+        private static byte[] s_endHeaders = System.Text.Encoding.UTF8.GetBytes("\r\n\r\n");
+
         private void ParseHttpRequest(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
 
-            var parsingStartLine = _state == State.StartLine;
-            if (parsingStartLine)
-            {
-                if (Parser.ParseRequestLine(this, buffer, out consumed, out examined))
-                {
-                    _state = State.Headers;
-                }
-            }
+            if (!buffer.IsSingleSegment)
+                throw new NotSupportedException("Buffer is not single segment");
 
-            if (_state == State.Headers)
-            {
-                if (Parser.ParseHeaders(this, parsingStartLine ? buffer.Slice(consumed) : buffer, out consumed, out examined, out int consumedBytes))
-                {
-                    _state = State.Body;
-                }
-            }
+            var span = buffer.First.Span;
+            if (!span.EndsWith(s_endHeaders))
+                return;
+
+            _state = State.Body;
+            consumed = examined;
         }
 
         private static void ThrowUnexpectedEndOfData()
