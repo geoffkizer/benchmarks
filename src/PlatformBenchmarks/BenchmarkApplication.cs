@@ -103,6 +103,8 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 
+        private static readonly byte[] s_responseBuffer = System.Text.Encoding.UTF8.GetBytes("{\"message\":\"Hello, World!\"}");
+
         private static void Json(PipeWriter pipeWriter)
         {
             var writer = new BufferWriter<PipeWriter>(pipeWriter);
@@ -121,14 +123,13 @@ namespace PlatformBenchmarks
 
             // Content-Length header
             writer.Write(_headerContentLength);
-            var jsonPayload = JsonSerializer.SerializeUnsafe(new { message = "Hello, World!" });
-            writer.WriteNumeric((ulong)jsonPayload.Count);
+            writer.WriteNumeric((ulong)s_responseBuffer.Length);
 
             // End of headers
             writer.Write(_eoh);
 
             // Body
-            writer.Write(jsonPayload);
+            writer.Write(s_responseBuffer);
             writer.Commit();
         }
 
