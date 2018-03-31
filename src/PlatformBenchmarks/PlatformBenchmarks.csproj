@@ -13,5 +13,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="NewtonSoft.Json" Version="11.0.2" />
   </ItemGroup>
 </Project>

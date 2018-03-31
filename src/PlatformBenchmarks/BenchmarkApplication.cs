@@ -6,7 +6,10 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Utf8Json;
+//using Utf8Json;
+using System.IO;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace PlatformBenchmarks
 {
@@ -103,6 +106,10 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 
+        private static readonly JsonSerializer s_json = new JsonSerializer();
+        private static readonly UTF8Encoding s_encoding = new UTF8Encoding(false);
+        private const int JsonContentLength = 27;
+
         private static void Json(PipeWriter pipeWriter)
         {
             var writer = new BufferWriter<PipeWriter>(pipeWriter);
@@ -121,15 +128,17 @@ namespace PlatformBenchmarks
 
             // Content-Length header
             writer.Write(_headerContentLength);
-            var jsonPayload = JsonSerializer.SerializeUnsafe(new { message = "Hello, World!" });
-            writer.WriteNumeric((ulong)jsonPayload.Count);
+            writer.WriteNumeric((ulong)JsonContentLength);
 
             // End of headers
             writer.Write(_eoh);
+            writer.Commit();
 
             // Body
-            writer.Write(jsonPayload);
-            writer.Commit();
+            using (var sw = new StreamWriter(new ResponseStream(pipeWriter), s_encoding, bufferSize: JsonContentLength))
+            {
+                s_json.Serialize(sw, new { message = "Hello, World!" });
+            }
         }
 
         private static void Default(PipeWriter pipeWriter)
@@ -152,5 +161,49 @@ namespace PlatformBenchmarks
             writer.Write(_crlf);
             writer.Commit();
         }
+
+        sealed class ResponseStream : Stream
+        {
+            private readonly PipeWriter _writer;
+
+            public ResponseStream(PipeWriter writer)
+            {
+                _writer = writer;
+            }
+
+            public override bool CanRead => false;
+            public override bool CanSeek => false;
+            public override bool CanWrite => true;
+            public override long Length => throw new NotImplementedException();
+            public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+            public override void Flush()
+            {
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                ReadOnlySpan<byte> source = new ReadOnlySpan<byte>(buffer, offset, count);
+                Span<byte> dest = _writer.GetSpan(count);
+                source.CopyTo(dest);
+                _writer.Advance(count);
+            }
+        }
     }
+
 }
