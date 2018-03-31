@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PlatformBenchmarks
 {
@@ -135,9 +136,10 @@ namespace PlatformBenchmarks
             writer.Commit();
 
             // Body
+            JObject jobject = new JObject(new JProperty("message", "Hello, World!"));
             using (var sw = new StreamWriter(new ResponseStream(pipeWriter), s_encoding, bufferSize: JsonContentLength))
             {
-                s_json.Serialize(sw, new { message = "Hello, World!" });
+                s_json.Serialize(sw, jobject);
             }
         }
 
