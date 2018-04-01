@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace PlatformBenchmarks
 {
@@ -106,7 +107,10 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 
-        private static readonly JsonSerializer s_json = new JsonSerializer();
+//        private static readonly JsonSerializer s_json = new JsonSerializer();
+
+        private static readonly JsonSerializer s_json = new JsonSerializer() { ContractResolver = new CachingContractResolver((new { message = "Hello, World!" }).GetType()) };
+
         private static readonly UTF8Encoding s_encoding = new UTF8Encoding(false);
         private const int JsonContentLength = 27;
 
@@ -202,6 +206,35 @@ namespace PlatformBenchmarks
                 Span<byte> dest = _writer.GetSpan(count);
                 source.CopyTo(dest);
                 _writer.Advance(count);
+            }
+        }
+
+        sealed class CachingContractResolver : IContractResolver
+        {
+            private readonly Type _type;
+            private readonly JsonContract _contract;
+            private readonly JsonContract _stringContract;
+
+            public CachingContractResolver(Type t)
+            {
+                _type = t;
+
+                var defaultResolver = new DefaultContractResolver();
+                _contract = defaultResolver.ResolveContract(t);
+
+                _stringContract = defaultResolver.ResolveContract(typeof(string));
+            }
+
+            public JsonContract ResolveContract(Type type)
+            {
+                if (type == _type)
+                    return _contract;
+
+                if (type == typeof(string))
+                    return _stringContract;
+
+                Console.WriteLine($"ResolveContract: Unknown type {type.FullName}");
+                throw new NotSupportedException("Unexpected type in ResolveContract");
             }
         }
     }
