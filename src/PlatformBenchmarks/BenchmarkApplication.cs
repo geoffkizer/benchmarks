@@ -11,9 +11,18 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace PlatformBenchmarks
 {
+    [DataContract]
+    public sealed class JsonData
+    {
+        [DataMember]
+        public string message;
+    }
+
     public class BenchmarkApplication : HttpConnection
     {
         private static AsciiString _crlf = "\r\n";
@@ -107,11 +116,14 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 
-//        private static readonly JsonSerializer s_json = new JsonSerializer();
+        //        private static readonly JsonSerializer s_json = new JsonSerializer();
 
-        private static readonly JsonSerializer s_json = new JsonSerializer() { ContractResolver = new CachingContractResolver((new { message = "Hello, World!" }).GetType()) };
+        //        private static readonly JsonSerializer s_json = new JsonSerializer() { ContractResolver = new CachingContractResolver((new { message = "Hello, World!" }).GetType()) };
 
-        private static readonly UTF8Encoding s_encoding = new UTF8Encoding(false);
+        //        private static readonly UTF8Encoding s_encoding = new UTF8Encoding(false);
+
+        private static readonly DataContractJsonSerializer s_dcjson = new DataContractJsonSerializer(typeof(JsonData));
+        
         private const int JsonContentLength = 27;
 
         private static void Json(PipeWriter pipeWriter)
@@ -139,10 +151,7 @@ namespace PlatformBenchmarks
             writer.Commit();
 
             // Body
-            using (var sw = new StreamWriter(new ResponseStream(pipeWriter), s_encoding, bufferSize: JsonContentLength))
-            {
-                s_json.Serialize(sw, new { message = "Hello, World!" });
-            }
+            s_dcjson.WriteObject(new ResponseStream(pipeWriter), new JsonData() { message = "Hello, World!" });
         }
 
         private static void Default(PipeWriter pipeWriter)
@@ -206,35 +215,6 @@ namespace PlatformBenchmarks
                 Span<byte> dest = _writer.GetSpan(count);
                 source.CopyTo(dest);
                 _writer.Advance(count);
-            }
-        }
-
-        sealed class CachingContractResolver : IContractResolver
-        {
-            private readonly Type _type;
-            private readonly JsonContract _contract;
-            private readonly JsonContract _stringContract;
-
-            public CachingContractResolver(Type t)
-            {
-                _type = t;
-
-                var defaultResolver = new DefaultContractResolver();
-                _contract = defaultResolver.ResolveContract(t);
-
-                _stringContract = defaultResolver.ResolveContract(typeof(string));
-            }
-
-            public JsonContract ResolveContract(Type type)
-            {
-                if (type == _type)
-                    return _contract;
-
-                if (type == typeof(string))
-                    return _stringContract;
-
-                Console.WriteLine($"ResolveContract: Unknown type {type.FullName}");
-                throw new NotSupportedException("Unexpected type in ResolveContract");
             }
         }
     }
