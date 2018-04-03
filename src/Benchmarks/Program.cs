@@ -27,6 +27,8 @@ namespace Benchmarks
 
         public static void Main(string[] args)
         {
+            Process.GetCurrentProcess().ProcessorAffinity = (IntPtr)(0x5555555555555555 & (long)Process.GetCurrentProcess().ProcessorAffinity);     // New code.  
+
             Args = args;
 
             Console.WriteLine();
